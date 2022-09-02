@@ -1,6 +1,25 @@
 const express = require('express');
 const app = express();
 
+const {TwitterApi} = require('twitter-api-v2');
+
+const client = new TwitterApi({
+    appKey: 'INSERTKEY',
+    appSecret: 'INSERTKEY',
+    accessToken: 'INSERTKEY',
+    accessSecret: 'INSERTKEY',
+});
+
+client.v2.singleTweet('1455477974489251841', {
+    'tweet.fields': [
+        'organic_metrics',
+     ],
+  }).then((val) => {
+    console.log(val)
+}).catch((err) => {
+    console.log(err)
+})
+
 const PORT = 5555;
 const USERS = [
     {
