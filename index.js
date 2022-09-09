@@ -1,7 +1,7 @@
-const express = require('express');
-const app = express();
-
-const {TwitterApi} = require('twitter-api-v2');
+const functions = require ('firebase-functions');
+const { TwitterApi } = require ('twitter-api-v2');
+const admin = require('firebase-admin');
+admin.initializeApp();
 
 const client = new TwitterApi({
     appKey: 'INSERTKEY',
@@ -10,42 +10,23 @@ const client = new TwitterApi({
     accessSecret: 'INSERTKEY',
 });
 
-client.v2.singleTweet('1455477974489251841', {
-    'tweet.fields': [
-        'organic_metrics',
-     ],
-  }).then((val) => {
-    console.log(val)
-}).catch((err) => {
-    console.log(err)
-})
 
-const PORT = 5555;
-const USERS = [
-    {
-        id: 1,
-        firstName: 'John',
-        lastName: 'Smith'
-    },
-    {
-        id: 2,
-        firstName: 'Jane',
-        lastName: 'Williams'
+exports.searchTweets = functions
+.region('australia-southeast1')
+.https
+.onCall(async (data, context) => {
+    if(!context.auth){
+        return {message: 'Authentication Required!', code: 401};
     }
-];
-
-app.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`);
+    console.log('searchTweets called');
+    try{
+        const query = data.query;
+        const response =  await client.v2.searchTweets(query);
+        console.log("The Response is" + response.request._redirectable._options.href)
+        return response;
+    } catch(error){
+        // return an error
+        console.log(error);
+        return (error);
+    }
 });
-
-app.get('/users', (req, res, next) => {
-    res.json(USERS);
-});
-
-app.get('/users/:userId', (req, res, next) => {
-    res.json(USERS.find(user => user.id === parseInt(req.params.userId)));
-});
-
-module.exports = {
-    app
-};
